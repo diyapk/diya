@@ -1,11 +1,242 @@
-<!DOCTYPE html> <html lang="en"> <head>    <meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Alert</title>
-    <script>
-        
-    </script>
+    <title>Translation Web App</title>
+    <style>
+        /* Global Styles */
+        body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #1e2a47; /* Dark navy blue */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    color: #e5e5e5; /* Light gray for text */
+}
+
+.container {
+    background-color: #f9fafb; /* Soft light background */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 650px;
+}
+
+h1 {
+    color: #4e73df; /* Medium blue */
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d8e0; /* Light gray */
+    border-radius: 8px;
+    resize: vertical;
+    min-height: 120px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: border 0.3s;
+}
+
+textarea:focus {
+    border-color: #6c5ce7; /* Purple */
+    outline: none;
+}
+
+/* Language Button Styles */
+.language-selection {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.language-btn {
+    background-color: #6c5ce7; /* Purple */
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.language-btn.selected {
+    background-color: #5c4db1; /* Darker purple */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.language-btn:hover {
+    background-color: #5c4db1;
+}
+
+/* Translate Button Styles */
+#translateBtn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background-color: #10ac84; /* Fresh green */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 15px;
+}
+
+#translateBtn:hover {
+    background-color: #00b894; /* Lighter green */
+}
+
+/* Results Styles */
+#results {
+    margin-top: 25px;
+}
+
+.result-item {
+    background-color: #f7f9fb; /* Soft off-white */
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.result-item h3 {
+    margin: 0 0 10px 0;
+    color: #2d3e50; /* Dark grayish blue */
+    font-size: 22px;
+}
+
+.result-item p {
+    margin: 0;
+    color: #7f8c8d; /* Light grayish */
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .language-selection {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .language-btn {
+        padding: 10px 18px;
+    }
+}
+
+    </style>
 </head>
 <body>
-  <button onclick="alert('hi')">hi</button>
+    <div class="container">
+        <h1>TRANSLATION WEB APP</h1>
+        <textarea id="inputText" placeholder="Enter text to translate..."></textarea>
+        <div class="language-selection" id="languageSelection">
+            <!-- Language buttons will be added here dynamically -->
+        </div>
+        <button id="translateBtn">Translate</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+
+        const languages = [
+            { code: 'es', name: 'Spanish' },
+            { code: 'fr', name: 'French' },
+            { code: 'de', name: 'German' },
+            { code: 'it', name: 'Italian' },
+            { code: 'pt', name: 'Portuguese' },
+            { code: 'ru', name: 'Russian' },
+            { code: 'ja', name: 'Japanese' },
+            { code: 'ko', name: 'Korean' },
+            { code: 'zh', name: 'Chinese' },
+            { code: 'ar', name: 'Arabic' }
+        ];
+
+        const languageSelection = document.getElementById('languageSelection');
+        const translateBtn = document.getElementById('translateBtn');
+        const inputText = document.getElementById('inputText');
+        const results = document.getElementById('results');
+
+        let selectedLanguages = [];
+
+        // Create language buttons
+        languages.forEach(lang => {
+            const btn = document.createElement('button');
+            btn.textContent = lang.name;
+            btn.classList.add('language-btn');
+            btn.addEventListener('click', () => toggleLanguage(lang.code, btn));
+            languageSelection.appendChild(btn);
+        });
+
+        function toggleLanguage(langCode, btn) {
+            const index = selectedLanguages.indexOf(langCode);
+            if (index > -1) {
+                selectedLanguages.splice(index, 1);
+                btn.classList.remove('selected');
+            } else {
+                selectedLanguages.push(langCode);
+                btn.classList.add('selected');
+            }
+        }
+
+        translateBtn.addEventListener('click', translateText);
+
+        async function translateText() {
+            const text = inputText.value.trim();
+            if (!text || selectedLanguages.length === 0) {
+                alert('Please enter text and select at least one language.');
+                return;
+            }
+
+            results.innerHTML = '';
+            for (const langCode of selectedLanguages) {
+                try {
+                    const translatedText = await fetchTranslation(text, langCode);
+                    displayResult(langCode, translatedText);
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    displayResult(langCode, 'Error: Could not translate.');
+                }
+            }
+        }
+
+        async function fetchTranslation(text, targetLang) {
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`);
+            const data = await response.json();
+            return data.responseData.translatedText;
+        }
+
+        function displayResult(langCode, translatedText) {
+            const langName = languages.find(lang => lang.code === langCode).name;
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
+            resultItem.innerHTML = `
+                <h3>${langName}</h3>
+                <p>${translatedText}</p>
+            `;
+            results.appendChild(resultItem);
+        }
+    </script>
 </body>
 </html>
